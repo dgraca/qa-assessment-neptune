@@ -1,0 +1,22 @@
+{
+  "name": "qa-assessment-neptune",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgraca/qa-assessment-neptune.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dgraca/qa-assessment-neptune/issues"
+  },
+  "homepage": "https://github.com/dgraca/qa-assessment-neptune#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0"
+  }
+}
