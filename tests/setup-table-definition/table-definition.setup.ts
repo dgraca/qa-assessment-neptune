@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { EXPENSE_TABLE_NAME } from '../table-browser/expense-record';
+import {
+    findTableDefinition,
+    openTableDefinition,
+} from './helpers/table-definition';
 
-const TEST_NAME = 'playwright-test-qa';
 const TEST_PROPERTIES = [
     {
         name: 'description',
@@ -44,44 +48,7 @@ test('Setup table definition', async ({ page }) => {
      * AI assistance was used to help diagnose this race condition and make the
      * test flow deterministic.
      */
-    await page.goto('/cockpit.html');
-
-    await page.getByRole('button', {
-        name: 'Home',
-        exact: true,
-    }).click();
-
-    const openTableDefinition = page
-        .getByRole('complementary')
-        .getByRole('listitem', { name: 'Table Definition' });
-
-    if (await openTableDefinition.isVisible()) {
-        await openTableDefinition.getByRole('button', {
-            name: 'Delete',
-            exact: true,
-        }).click();
-
-        await expect(openTableDefinition).toBeHidden();
-    }
-
-    const toolsSearch = page.getByRole('searchbox', {
-        name: 'Search tools & artifacts (ALT or Option+S)',
-    });
-
-    await toolsSearch.fill('Table Definition');
-    const toolsResults = page.getByRole('heading', {
-        name: 'TOOLS',
-        level: 2,
-    }).locator('..');
-
-    await toolsResults.getByText('Table Definition', { exact: true }).click();
-
-    const tableDefinitionPage = page.getByRole('heading', {
-        name: 'Table Definition',
-        level: 1
-    });
-
-    await expect(tableDefinitionPage).toBeVisible();
+    await openTableDefinition(page);
 
     /**
      * Check if there's a table definition already created
@@ -89,17 +56,10 @@ test('Setup table definition', async ({ page }) => {
      * Probably in a well set up environment with CI/CD the data is reset every time to avoid these type of checks.
      * But because I don't have a proper CI/CD set up and I think that would be overkill (and time consuming) I'm just going to check whether it exists, and if not, create it.
      */
-    const tableSearch = page.getByRole('searchbox', {
-        name: 'Search',
-        exact: true,
-    });
-
-    await tableSearch.fill(TEST_NAME);
-
-    const existingTableDefinition = page.getByRole('gridcell', {
-        name: TEST_NAME,
-        exact: true,
-    });
+    const existingTableDefinition = await findTableDefinition(
+        page,
+        EXPENSE_TABLE_NAME,
+    );
 
     const tableDefinitionExists = await existingTableDefinition.count() > 0;
 
@@ -119,7 +79,7 @@ test('Setup table definition', async ({ page }) => {
     await createDefinitionDialog.getByRole('textbox', {
         name: 'Name',
         exact: true,
-    }).fill(TEST_NAME);
+    }).fill(EXPENSE_TABLE_NAME);
 
     await createDefinitionDialog.getByRole('button', {
         name: 'Create',

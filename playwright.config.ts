@@ -52,6 +52,15 @@ export default defineConfig({
       name: 'table-definition-setup',
       testMatch: '**/setup-table-definition/table-definition.setup.ts',
       dependencies: ['auth-setup'],
+      teardown: 'table-definition-teardown',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+    },
+    {
+      name: 'table-definition-teardown',
+      testMatch: '**/setup-table-definition/table-definition.teardown.ts',
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
@@ -59,7 +68,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      testIgnore: '**/*.setup.ts',
+      testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
@@ -68,7 +77,7 @@ export default defineConfig({
     },
     {
       name: 'firefox',
-      testIgnore: '**/*.setup.ts',
+      testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
       use: {
         ...devices['Desktop Firefox'],
         storageState: 'playwright/.auth/user.json',
@@ -77,7 +86,7 @@ export default defineConfig({
     },
     {
       name: 'webkit',
-      testIgnore: '**/*.setup.ts',
+      testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
       use: {
         ...devices['Desktop Safari'],
         storageState: 'playwright/.auth/user.json',

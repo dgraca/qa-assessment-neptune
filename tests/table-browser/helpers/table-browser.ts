@@ -216,9 +216,18 @@ export async function fillExpenseRecord(
     }
 
     if (expense.paid !== undefined) {
-        await row
-            .getByRole("checkbox", { name: EXPENSE_FIELD_LABELS.paid })
-            .setChecked(expense.paid);
+        const paidCheckbox = row.getByRole("checkbox", {
+            name: EXPENSE_FIELD_LABELS.paid,
+        });
+
+        if (await paidCheckbox.isChecked() !== expense.paid) {
+            await paidCheckbox.focus();
+            await paidCheckbox.press("Space");
+        }
+
+        await expect(paidCheckbox).toBeChecked({
+            checked: expense.paid,
+        });
     }
 }
 
