@@ -1,5 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Load local credentials when tests are run directly on the host.
+// Docker/CI can continue to provide them through environment variables.
+try {
+  process.loadEnvFile();
+} catch {
+  // A .env file is optional outside local development.
+}
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -19,8 +27,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Authentication uses one account and writes to one shared storage-state file. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -35,46 +43,46 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // I must configure the initial setup to create the user session so the other tests can be ran without running the auth test every time
+    {
+      name: 'auth-setup',
+      testMatch: '**/auth/login.setup.ts',
+    },
+    {
+      name: 'table-definition-setup',
+      testMatch: '**/setup-table-definition/table-definition.setup.ts',
+      dependencies: ['auth-setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+    },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      testIgnore: '**/*.setup.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['table-definition-setup'],
     },
-
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      testIgnore: '**/*.setup.ts',
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['table-definition-setup'],
     },
-
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      testIgnore: '**/*.setup.ts',
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['table-definition-setup'],
     },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });

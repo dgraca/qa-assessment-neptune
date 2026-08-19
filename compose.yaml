@@ -39,6 +39,7 @@ services:
       - tests
     environment:
       BASE_URL: http://neptune:8080
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
       neptune:
         condition: service_healthy
