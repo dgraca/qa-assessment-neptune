@@ -73,16 +73,39 @@ Node.js and the Playwright browser dependencies must be installed on the host,
 while Neptune can continue to run through Docker. Shell commands shown in this
 README use Bash syntax unless a PowerShell alternative is provided.
 
+### Start and configure Neptune
+
+Before running the test suite for the first time, pull the required images and
+start the Neptune containers:
+
+```bash
+docker compose pull
+docker compose up -d neptune
+```
+
+When the containers are healthy, open `http://localhost:8080` in a browser and
+complete Neptune's initial setup:
+
+1. Sign in with the `admin` user and the initial password set as
+   `ADMIN_PASSWORD` in `.env`.
+2. When prompted, reset the administrator password.
+3. Sign in to Neptune with the new password.
+4. Add a valid Neptune licence in the platform.
+5. Update `ADMIN_PASSWORD` in `.env` to the new administrator password. The
+   automated tests use this value to sign in.
+
+This manual configuration is required only for a new Neptune data volume. Do
+not run the tests until the password has been reset and a valid licence has
+been added.
+
 ### Run with Docker (recommended)
 
-The Docker workflow starts Neptune, waits for it to become healthy, builds the
-Playwright image, and runs the tests headlessly:
+After completing the Neptune setup above, build the Playwright image and run
+the complete test suite headlessly:
 
 ```bash
 docker compose --profile tests run --rm --build playwright
 ```
-
-The application is exposed at `http://localhost:8080`.
 
 To stop the application:
 
@@ -101,11 +124,8 @@ Warning: removing the volume permanently deletes the local Neptune data.
 
 ### Run locally
 
-Start Neptune:
-
-```bash
-docker compose up -d neptune
-```
+First complete the Neptune setup described in
+[Start and configure Neptune](#start-and-configure-neptune).
 
 Install the Node.js dependencies and Playwright browsers:
 
