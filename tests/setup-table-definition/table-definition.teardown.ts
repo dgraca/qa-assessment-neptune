@@ -55,10 +55,20 @@ test('Teardown table definition', async ({ page }) => {
     await deleteButton.click();
 
     const confirmationDialog = page.getByRole('dialog');
+    const deleteResponsePromise = page.waitForResponse(response => {
+        const url = new URL(response.url());
+
+        return response.request().method() === 'POST'
+            && url.pathname === '/api/functions/Dictionary/Delete';
+    });
+
     await confirmationDialog.getByRole('button', {
         name: 'Yes, delete!',
         exact: true,
     }).click();
+
+    const deleteResponse = await deleteResponsePromise;
+    expect(deleteResponse.ok()).toBeTruthy();
 
     await findTableDefinition(page, EXPENSE_TABLE_NAME);
 

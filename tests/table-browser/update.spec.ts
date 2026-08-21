@@ -6,6 +6,7 @@ import {
     fillExpenseRecord,
     openTable,
     openTableBrowser,
+    saveEntityChanges,
 } from './helpers/table-browser';
 import {
     createExpenseData,
@@ -45,17 +46,7 @@ test('Updates a valid record', async ({ page }) => {
     const row = findExpenseRecordRow(page, validExpense.description);
     await fillExpenseRecord(row, updatedExpense);
 
-    const updateResponsePromise = page.waitForResponse(response =>
-        response.request().method() === 'POST'
-        && response.url().includes('/api/'),
-    );
-
-    await page.getByRole('button', {
-        name: 'Save',
-        exact: true,
-    }).click();
-
-    const updateResponse = await updateResponsePromise;
+    const updateResponse = await saveEntityChanges(page);
     expect(updateResponse.ok()).toBeTruthy();
 
     // Reopens the table to assert that the updated data was persisted.

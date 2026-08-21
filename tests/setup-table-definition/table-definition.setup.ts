@@ -162,10 +162,12 @@ test('Setup table definition', async ({ page }) => {
         }
     }
 
-    const saveResponsePromise = page.waitForResponse(response =>
-        response.request().method() === 'POST'
-        && response.url().includes('/api/'),
-    );
+    const saveResponsePromise = page.waitForResponse(response => {
+        const url = new URL(response.url());
+
+        return response.request().method() === 'POST'
+            && url.pathname === '/api/functions/Dictionary/Save';
+    });
 
     await page.getByRole('toolbar', {
         name: 'Header actions',

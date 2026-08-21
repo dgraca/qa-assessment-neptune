@@ -3,6 +3,7 @@ import {
     EXPENSE_FIELD_LABELS,
     type ExpenseRecord,
 } from "../expense-record";
+import { openCockpitHome } from "../../helpers/cockpit";
 
 /**
  * Helper function to open table browser
@@ -10,14 +11,7 @@ import {
  * @param page 
  */
 export async function openTableBrowser(page: Page) {
-    await page.goto("/cockpit.html");
-
-    await page
-        .getByRole("button", {
-            name: "Home",
-            exact: true,
-        })
-        .click();
+    await openCockpitHome(page);
 
     const openTableBrowser = page
         .getByRole("complementary")
@@ -91,12 +85,22 @@ export async function openTable(
         await filterRow.getByRole("textbox").nth(2).fill(filter.value);
     }
 
+    const tableResponsePromise = page.waitForResponse(response => {
+        const url = new URL(response.url());
+
+        return response.request().method() === "GET"
+            && url.pathname === `/api/entity/${tableName}`;
+    });
+
     await page
         .getByRole("button", {
             name: "Run",
             exact: true,
         })
         .click();
+
+    const tableResponse = await tableResponsePromise;
+    expect([200, 304]).toContain(tableResponse.status());
 
     await expect(
         page.getByRole("heading", {
@@ -246,10 +250,21 @@ export async function createExpenseRecord(
     const row = await addRecordRow(page);
     await fillExpenseRecord(row, expense);
 
-    const saveResponsePromise = page.waitForResponse(response =>
-        response.request().method() === "POST"
-        && response.url().includes("/api/"),
-    );
+    const response = await saveEntityChanges(page);
+
+    return { row, response };
+}
+
+/**
+ * Saves Table Browser changes and waits for Neptune's entity save call.
+ */
+export async function saveEntityChanges(page: Page) {
+    const saveResponsePromise = page.waitForResponse(response => {
+        const url = new URL(response.url());
+
+        return response.request().method() === "POST"
+            && url.pathname === "/api/functions/Entity/Save";
+    });
 
     await page
         .getByRole("button", {
@@ -258,7 +273,5 @@ export async function createExpenseRecord(
         })
         .click();
 
-    const response = await saveResponsePromise;
-
-    return { row, response };
+    return saveResponsePromise;
 }

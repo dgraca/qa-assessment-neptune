@@ -1,15 +1,11 @@
 import { expect, type Page } from '@playwright/test';
+import { openCockpitHome } from '../../helpers/cockpit';
 
 /**
  * Opens table definition from /cockpit
  */
 export async function openTableDefinition(page: Page) {
-    await page.goto('/cockpit.html');
-
-    await page.getByRole('button', {
-        name: 'Home',
-        exact: true,
-    }).click();
+    await openCockpitHome(page);
 
     const openTableDefinition = page
         .getByRole('complementary')

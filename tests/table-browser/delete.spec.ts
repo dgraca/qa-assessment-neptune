@@ -44,9 +44,12 @@ test('Deletes a valid record', async ({ page }) => {
         name: 'Header actions',
     });
 
-    const deleteResponsePromise = page.waitForResponse(response =>
-        response.request().method() !== 'GET',
-    );
+    const deleteResponsePromise = page.waitForResponse(response => {
+        const url = new URL(response.url());
+
+        return response.request().method() === 'POST'
+            && url.pathname === '/api/functions/Entity/Delete';
+    });
 
     await headerActions.getByRole('button', {
         name: 'Delete',
